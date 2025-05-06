@@ -10,6 +10,7 @@ module RubyLsp
       # Performs any activation that needs to happen once when the language server is booted
       def activate(global_state, message_queue)
         @global_state = global_state
+        @index = global_state.index
       end
 
       # Performs any cleanup when shutting down the server, like terminating a subprocess
@@ -28,7 +29,7 @@ module RubyLsp
       end
 
       def create_definition_listener(response_builder, uri, node_context, dispatcher)
-        Definition.new(response_builder, node_context, dispatcher)
+        Definition.new(response_builder, node_context, @index, dispatcher)
       end
     end
   end
