@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 # ruby -Itest test/test_ruby_lsp_hanami.rb
 require "test_helper"
 
@@ -6,13 +7,14 @@ module RubyLsp
   module Hanami
     class TestDefinition < Minitest::Test
       include RubyLsp::TestHelper
-    
+
       def test_my_addon_works
-        source =  <<~RUBY
+        source = <<~RUBY
           # Some test code that allows you to trigger your add-on's contribution
-          include Deps['jobs.create']
+          class Create
+          end
         RUBY
-          
+
         p "starting ..."
         with_server(source) do |server, uri|
           p "with server #{uri}"
@@ -22,15 +24,15 @@ module RubyLsp
             method: "textDocument/definition",
             params: {
               textDocument: {
-                uri: uri.to_s,
+                uri: uri.to_s
               },
               position: {
                 line: 1,
-                character: 15
+                character: 7
               }
             }
           )
-    
+
           result = pop_result(server)
           p "result: #{result.response}"
           # Pop the server's response to the definition request

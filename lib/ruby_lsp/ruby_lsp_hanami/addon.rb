@@ -1,6 +1,6 @@
-require 'ruby_lsp/addon'
+require "ruby_lsp/addon"
 
-require_relative 'definition'
+require_relative "definition"
 
 module RubyLsp
   module Hanami
@@ -30,6 +30,10 @@ module RubyLsp
 
       def create_definition_listener(response_builder, uri, node_context, dispatcher)
         Definition.new(response_builder, node_context, @index, dispatcher)
+      end
+
+      def on_class_node_enter(node)
+        p "found class node1: #{node.name}"
       end
     end
   end
