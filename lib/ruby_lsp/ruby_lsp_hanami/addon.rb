@@ -28,12 +28,8 @@ module RubyLsp
         "0.1.0"
       end
 
-      def create_definition_listener(response_builder, uri, node_context, dispatcher)
+      def create_definition_listener(response_builder, _uri, node_context, dispatcher)
         Definition.new(response_builder, node_context, @index, dispatcher)
-      end
-
-      def on_class_node_enter(node)
-        p "found class node1: #{node.name}"
       end
     end
   end

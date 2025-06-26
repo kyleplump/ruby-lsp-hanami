@@ -20,29 +20,23 @@ module RubyLsp
       end
 
       def on_class_node_enter(node)
-        p "node node node: #{node.name}"
+        # ??
       end
 
       def on_string_node_enter(node)
-        # p "node: #{node.content}"
-        # p "call node: #{@node_context.call_node.name}"
-        # p "call node reciever: #{@node_context.call_node.receiver.name}"
-        # p "index?? #{@node_context.nesting}"
-        # # p "index2: #{@index["call"]}"
-        p "entries: #{@index["job_repo"]}"
-        p "test: #{@index.resolve("Repos::JobRepo", ["::"])}"
-        p "test2: #{@index.first_unqualified_const("JobRepo")}"
-
+        # collect possible matches
         if @node_context.call_node.receiver.name.to_s == "Deps"
           entries = []
           suffix = node.content.split(".").last
           entries += @index[suffix] || []
+          # hack to include operations using '#call'
           entries += @index["call"] || [] unless node.content.include?("repos")
           entries += @index.first_unqualified_const(suffix.split("_").collect! { |w| w.capitalize }.join) || []
         end
 
         entries.each do |entry|
           loc = entry.location
+          # dont want gems :(
           next if entry.file_path.include?("ruby")
 
           @response_builder << Interface::Location.new(

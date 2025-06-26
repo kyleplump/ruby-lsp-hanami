@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 # ruby -Itest test/test_ruby_lsp_hanami.rb
+#
+# this doesnt really work yet
 require "test_helper"
 
 module RubyLsp
@@ -10,15 +12,11 @@ module RubyLsp
 
       def test_my_addon_works
         source = <<~RUBY
-          # Some test code that allows you to trigger your add-on's contribution
           class Create
           end
         RUBY
 
-        p "starting ..."
         with_server(source) do |server, uri|
-          p "with server #{uri}"
-          # Tell the server to execute the definition request
           server.process_message(
             id: 1,
             method: "textDocument/definition",
@@ -35,11 +33,6 @@ module RubyLsp
 
           result = pop_result(server)
           p "result: #{result.response}"
-          # Pop the server's response to the definition request
-          # result = server.pop_response.response
-          # p "result: #{result}"
-          # # Assert that the response includes your add-on's contribution
-          # assert_equal(123, result.response.location)
         end
       end
     end
