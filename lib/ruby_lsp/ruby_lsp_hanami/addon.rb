@@ -1,6 +1,7 @@
 require "ruby_lsp/addon"
 
 require_relative "definition"
+require_relative "completion"
 
 module RubyLsp
   module Hanami
@@ -30,6 +31,10 @@ module RubyLsp
 
       def create_definition_listener(response_builder, _uri, node_context, dispatcher)
         Definition.new(response_builder, node_context, @index, dispatcher)
+      end
+
+      def create_completion_listener(response_builder, node_context, dispatcher, _uri)
+        Completion.new(response_builder, node_context, dispatcher, @index)
       end
     end
   end
