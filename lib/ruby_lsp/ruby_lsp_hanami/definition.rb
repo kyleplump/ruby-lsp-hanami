@@ -25,14 +25,16 @@ module RubyLsp
 
       def on_string_node_enter(node)
         # collect possible matches
-        if @node_context.call_node.receiver.name.to_s == "Deps"
-          entries = []
-          suffix = node.content.split(".").last
-          entries += @index[suffix] || []
-          # hack to include operations using '#call'
-          entries += @index["call"] || [] unless node.content.include?("repos")
-          entries += @index.first_unqualified_const(suffix.split("_").collect! { |w| w.capitalize }.join) || []
-        end
+        entries = if @node_context.call_node.receiver.name.to_s == "Deps"
+                    # first look for potentially matching keys picked up during indexing
+                    caught_ones = RubyLsp::Hanami.container_keys.select { |k, _| k.include?(node.content) }.values || []
+                    resolved_ones = @index.resolve(node.content.split('.').last, node.content.split('.')[0, node.content.split('.').length - 1]) || []
+                    entries = caught_ones + resolved_ones
+                    entries.uniq!
+                    entries
+                  else
+                    []
+                  end
 
         entries.each do |entry|
           loc = entry.location
