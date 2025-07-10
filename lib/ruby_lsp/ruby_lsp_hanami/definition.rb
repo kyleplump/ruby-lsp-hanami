@@ -1,3 +1,4 @@
+# typed: true
 # frozen_string_literal: true
 
 module RubyLsp
@@ -5,6 +6,7 @@ module RubyLsp
     # top level comment
     #
     class Definition
+      extend T::Sig
       include Requests::Support::Common
 
       def initialize(response_builder, node_context, index, dispatcher)

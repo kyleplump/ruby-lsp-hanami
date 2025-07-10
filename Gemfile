@@ -12,3 +12,7 @@ gem "minitest", "~> 5.16"
 gem "rubocop", "~> 1.21"
 
 gem "byebug", "~> 12.0"
+
+gem 'sorbet', :group => :development
+gem 'sorbet-runtime'
+gem 'tapioca', require: false, :group => [:development, :test]

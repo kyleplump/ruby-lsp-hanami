@@ -1,12 +1,17 @@
+# typed: true
+# frozen_string_literal: true
+
 module RubyLsp
   module Hanami
     class Completion
+      extend T::Sig
       include Requests::Support::Common
 
-      def initialize(response_builder, node_context, dispatcher, global_index)
+      def initialize(response_builder, node_context, dispatcher, global_index, mq)
         @response_builder = response_builder
         @node_context = node_context
         @global_index = global_index
+        @mq = mq
         dispatcher.register(
           self,
           :on_call_node_enter\
@@ -17,26 +22,26 @@ module RubyLsp
 
         return unless @node_context.call_node&.receiver
         receiver_name = @node_context.call_node.receiver.name.to_s
-
+        p "call_node: #{@node_context.call_node.receiver.inspect}"
         return unless node.arguments&.arguments&.any?
 
         args = node.arguments.arguments.first.unescaped
         puts "Args: '#{args}'"
-
+        p "receiver name: #{receiver_name}"
         if receiver_name == 'Deps'
           parents = args.split('.')[0, args.split('.').length - 1]
           needle = args.split('.').last
           puts "Parents: #{parents.inspect}"
           puts "Needle: '#{needle}'"
-
+          p "thing? #{@global_index['create']}"
           hits = @global_index.constant_completion_candidates(needle, parents)
           puts "Hits found: #{hits&.length || 0}"
 
           if hits&.any?
             hits.each do |hit|
               next if hit.first.uri.to_s.include?(".rbenv")
-
               hit = hit.first
+
               # TODO put this in readme: must have these turned on in VS code to get completions for each keystroke
               # {
               #   "editor.quickSuggestions": {

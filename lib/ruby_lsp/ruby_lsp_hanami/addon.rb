@@ -1,3 +1,6 @@
+# typed: true
+# frozen_string_literal: true
+
 require "ruby_lsp/addon"
 
 require_relative "definition"
@@ -6,6 +9,7 @@ require_relative "indexing_enhancement"
 
 module RubyLsp
   module Hanami
+
     @container_keys = {}
 
     def self.container_keys
@@ -23,6 +27,7 @@ module RubyLsp
       def activate(global_state, message_queue)
         @global_state = global_state
         @index = global_state.index
+        @message_queue = message_queue
       end
 
       # Performs any cleanup when shutting down the server, like terminating a subprocess
@@ -45,7 +50,7 @@ module RubyLsp
       end
 
       def create_completion_listener(response_builder, node_context, dispatcher, _uri)
-        Completion.new(response_builder, node_context, dispatcher, @index)
+        Completion.new(response_builder, node_context, dispatcher, @index, @message_queue)
       end
     end
   end
