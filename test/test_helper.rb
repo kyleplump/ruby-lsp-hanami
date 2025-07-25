@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
-require "ruby_lsp_hanami"
+require "ruby_lsp_hanami/version"
 
 require "minitest/autorun"
 require "ruby_lsp/internal"
@@ -10,7 +10,6 @@ require "ruby_lsp/ruby_lsp_hanami/addon"
 
 module ActiveSupport
   class TestCase
-    extend T::Sig
     include RubyLsp::TestHelper
   end
 end

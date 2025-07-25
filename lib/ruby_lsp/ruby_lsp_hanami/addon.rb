@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 
 require "ruby_lsp/addon"
+require 'sorbet-runtime'
 
 require_relative "definition"
 require_relative "completion"
