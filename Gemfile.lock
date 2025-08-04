@@ -3,6 +3,7 @@ PATH
   specs:
     ruby_lsp_hanami (0.1.0)
       ruby-lsp (>= 0.24.0)
+      sorbet-runtime
 
 GEM
   remote: https://rubygems.org/

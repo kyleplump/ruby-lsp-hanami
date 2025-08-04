@@ -2,7 +2,8 @@
 # frozen_string_literal: true
 
 require "ruby_lsp/addon"
-require 'sorbet-runtime'
+require "sorbet-runtime"
+require_relative "hanami_helpers"
 
 require_relative "definition"
 require_relative "completion"
@@ -10,17 +11,6 @@ require_relative "indexing_enhancement"
 
 module RubyLsp
   module Hanami
-
-    @container_keys = {}
-
-    def self.container_keys
-      @container_keys
-    end
-
-    def self.set_container_key(k, v)
-      @container_keys[k] = v
-    end
-
     class Addon < ::RubyLsp::Addon
       extend T::Sig
 

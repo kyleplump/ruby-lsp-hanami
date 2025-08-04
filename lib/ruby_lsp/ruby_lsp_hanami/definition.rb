@@ -26,11 +26,23 @@ module RubyLsp
       end
 
       def on_string_node_enter(node)
+        # dumb
+        containers = %w[deps app]
+
         # collect possible matches
-        entries = if @node_context.call_node.receiver.name.to_s == "Deps"
+        entries = if containers.include?(@node_context.call_node.receiver.name.to_s.downcase)
                     # first look for potentially matching keys picked up during indexing
-                    caught_ones = RubyLsp::Hanami.container_keys.select { |k, _| k.include?(node.content) }.values || []
-                    resolved_ones = @index.resolve(node.content.split('.').last, node.content.split('.')[0, node.content.split('.').length - 1]) || []
+                    # look in both directions. for the case where the cached key is a substring or exact match of the node content
+                    # -> e.g.: cached key is "repos.my_repo" and the node content is "repos.my_repo"
+                    # as well as when the node content is longer than the cached key (this could happen with Slice imports)
+                    # -> e.g.: cached key is "repos.my_repo" and the node content is "main_slice.repos.job_repo" (in the case that the Definition
+                    # request comes from a slice)
+                    caught_ones = RubyLsp::Hanami.container_keys.select do |k, _|
+                      k.include?(node.content) || node.content.include?(k)
+                    end.values || []
+                    resolved_ones = @index.resolve(node.content.split(".").last,
+                                                   node.content.split(".")[0, node.content.split(".").length - 1]) || []
+
                     entries = caught_ones + resolved_ones
                     entries.uniq!
                     entries

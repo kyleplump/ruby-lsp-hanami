@@ -11,14 +11,14 @@ module RubyLsp
       include RubyLsp::TestHelper
 
       def test_deps_default_indexer
-        response = generate_definitions_for_source(<<~RUBY, { line: 6, character: 33})
+        response = generate_definitions_for_source(<<~RUBY, { line: 6, character: 27 })
           # typed: false
-          class MyOperation < Hanami::Operation
+          class MyClass
             def create; end
           end
 
-          class Create
-            include Deps['my_operation.create']
+          class MySecondClass
+            include Deps['my_class.create']
           end
         RUBY
 
