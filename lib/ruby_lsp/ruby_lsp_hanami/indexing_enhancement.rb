@@ -17,8 +17,17 @@ module RubyLsp
 
         @listener.define_singleton_method(:on_class_node_enter) do |node|
           result = original_method.call(node)
-          class_entry = RubyIndexer::Entry.new(node.name, file_path, node.location, "")
-          RubyLsp::Hanami.set_container_key(result.join(".").downcase, class_entry)
+          # class_entry = RubyIndexer::Entry.new(node.name, file_path, node.location, "")
+          # nesting, uri, location, name location , comments, parent class
+          class_entry = RubyIndexer::Entry::Class.new([], file_path, node.location, node.name, node.comments, "")
+
+          # https://gist.github.com/komasaru/b3f22d5bcb8555deea1707b84d294045
+          snakified_name = result.join(".")
+                                 .gsub(/([A-Z]+)([A-Z][a-z])/, '\1_\2')
+                                 .gsub(/([a-z\d])([A-Z])/, '\1_\2')
+                                 .downcase
+
+          RubyLsp::Hanami.set_container_key(snakified_name, class_entry)
         end
       end
 

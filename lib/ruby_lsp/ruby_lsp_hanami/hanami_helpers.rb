@@ -4,6 +4,8 @@ module RubyLsp
   module Hanami
     extend T::Sig
     @container_keys = {}
+    # dumb
+    CONTAINERS = %w[deps app]
 
     def self.container_keys
       @container_keys

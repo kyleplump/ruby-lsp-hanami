@@ -26,11 +26,8 @@ module RubyLsp
       end
 
       def on_string_node_enter(node)
-        # dumb
-        containers = %w[deps app]
-
         # collect possible matches
-        entries = if containers.include?(@node_context.call_node.receiver.name.to_s.downcase)
+        entries = if RubyLsp::Hanami::CONTAINERS.include?(@node_context.call_node.receiver.name.to_s.downcase)
                     # first look for potentially matching keys picked up during indexing
                     # look in both directions. for the case where the cached key is a substring or exact match of the node content
                     # -> e.g.: cached key is "repos.my_repo" and the node content is "repos.my_repo"

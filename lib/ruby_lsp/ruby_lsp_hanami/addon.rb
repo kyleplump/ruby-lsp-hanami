@@ -17,7 +17,8 @@ module RubyLsp
       # Performs any activation that needs to happen once when the language server is booted
       def activate(global_state, message_queue)
         @global_state = global_state
-        @index = global_state.index
+        @workspace_path = @global_state.workspace_path
+        @index = @global_state.index
         @message_queue = message_queue
       end
 
@@ -41,7 +42,7 @@ module RubyLsp
       end
 
       def create_completion_listener(response_builder, node_context, dispatcher, _uri)
-        Completion.new(response_builder, node_context, dispatcher, @index, @message_queue)
+        Completion.new(response_builder, node_context, dispatcher, @index, @message_queue, @workspace_path)
       end
     end
   end
