@@ -42,7 +42,7 @@ module RubyLsp
       end
 
       def create_completion_listener(response_builder, node_context, dispatcher, _uri)
-        Completion.new(response_builder, node_context, dispatcher, @index, @message_queue, @workspace_path)
+        Completion.new(response_builder, node_context, dispatcher, @index, @workspace_path)
       end
     end
   end

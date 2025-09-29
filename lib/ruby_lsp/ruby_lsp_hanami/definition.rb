@@ -17,14 +17,6 @@ module RubyLsp
         dispatcher.register(self, :on_symbol_node_enter, :on_string_node_enter, :on_class_node_enter)
       end
 
-      def on_symbol_node_enter(node)
-        # todo
-      end
-
-      def on_class_node_enter(node)
-        # ??
-      end
-
       def on_string_node_enter(node)
         # collect possible matches
         entries = if RubyLsp::Hanami::CONTAINERS.include?(@node_context.call_node.receiver.name.to_s.downcase)

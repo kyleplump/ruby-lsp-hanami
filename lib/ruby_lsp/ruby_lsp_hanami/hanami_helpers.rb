@@ -1,17 +1,20 @@
 # typed: true
+# frozen_string_literal: true
 
 module RubyLsp
+  # top level comment
+  #
   module Hanami
     extend T::Sig
     @container_keys = {}
     # dumb
-    CONTAINERS = %w[deps app]
+    CONTAINERS = %w[deps app].freeze
 
     def self.container_keys
       @container_keys
     end
 
-    # TODO: fix this
+    # TODO: update sig to not use anything
     sig { params(key: String, value: T.anything).void }
     def self.set_container_key(key, value)
       # convert key to downcase snake case
