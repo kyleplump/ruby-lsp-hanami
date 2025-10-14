@@ -8,6 +8,7 @@ require_relative "hanami_helpers"
 require_relative "definition"
 require_relative "completion"
 require_relative "indexing_enhancement"
+require_relative "diagnostics_runner"
 
 module RubyLsp
   module Hanami
@@ -20,6 +21,8 @@ module RubyLsp
         @workspace_path = @global_state.workspace_path
         @index = @global_state.index
         @message_queue = message_queue
+
+        global_state.register_formatter("hanami_diagnostics", HanamiDiagnosticsRunner.new(message_queue))
       end
 
       # Performs any cleanup when shutting down the server, like terminating a subprocess

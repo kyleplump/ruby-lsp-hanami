@@ -3,7 +3,7 @@
 require_relative "lib/ruby_lsp_hanami/version"
 
 Gem::Specification.new do |spec|
-  spec.name = "ruby_lsp_hanami"
+  spec.name = "ruby-lsp-hanami"
   spec.version = RubyLspHanami::VERSION
   spec.authors = ["Kyle Plump"]
   spec.email = ["kplump1395@gmail.com"]
