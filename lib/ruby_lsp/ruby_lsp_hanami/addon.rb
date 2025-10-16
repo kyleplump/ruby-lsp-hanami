@@ -22,7 +22,7 @@ module RubyLsp
         @index = @global_state.index
         @message_queue = message_queue
 
-        global_state.register_formatter("hanami_diagnostics", HanamiDiagnosticsRunner.new(message_queue))
+        global_state.register_formatter("hanami_diagnostics", HanamiDiagnosticsRunner.new(@message_queue, @global_state.index))
       end
 
       # Performs any cleanup when shutting down the server, like terminating a subprocess
