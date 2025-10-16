@@ -26,51 +26,54 @@ module RubyLsp
 
         given_key = deps_argument.unescaped
 
-        caught_ones = RubyLsp::Hanami.container_keys.select do |k, _|
-          k.include?(given_key) || given_key.include?(k)
-        end.values || []
-        resolved_ones = @index.resolve(given_key.split(".").last,
-                                       given_key.split(".")[0, given_key.split(".").length - 1]) || []
-
-        entries = caught_ones + resolved_ones
-        entries.uniq!
-
-        if entries.empty?
-          diagnostic = RubyLsp::Interface::Diagnostic.new(
-            message: "test diagnostic",
-            range: RubyLsp::Interface::Range.new(
-              start: RubyLsp::Interface::Position.new(line: deps_argument.opening_loc.start_line - 1, character: deps_argument.opening_loc.start_column),
-              end: RubyLsp::Interface::Position.new(line: deps_argument.closing_loc.end_line - 1, character: deps_argument.closing_loc.end_column),
-            ),
-            severity: 1
-          )
-
-          @message_queue.push(
-            method: "textDocument/publishDiagnostics",
-            params: RubyLsp::Interface::PublishDiagnosticsParams.new(
-              uri: uri,
-              diagnostics: [diagnostic],
-              version: 1 # ?
-            )
-          )
+        # TODO: make this name less bad and also maybe dont do this
+        all_keys = RubyLsp::Hanami.container_keys.keys
+        has_given_key = false
+        all_keys.each do |key|
+          has_given_key = true if key.end_with?(given_key)
         end
+
+        # if there are no diagnostic errors, push an empty list to clear any previously
+        # sent diagnostics for the file
+        # @see https://dart.googlesource.com/sdk/%2B/fe6fc7803dd69c2ea4a1471d5898b4f4e13c0f99/pkg/analysis_server/tool/lsp_spec/lsp_specification.md#publishdiagnostics-notification-arrow_left
+        diagnostics = if has_given_key
+                        []
+                      else
+                        [
+                          RubyLsp::Interface::Diagnostic.new(
+                            message: "Key: \"#{given_key}\" not found.",
+                            range: RubyLsp::Interface::Range.new(
+                              start: RubyLsp::Interface::Position.new(line: deps_argument.opening_loc.start_line - 1, character: deps_argument.opening_loc.start_column),
+                              end: RubyLsp::Interface::Position.new(line: deps_argument.closing_loc.end_line - 1, character: deps_argument.closing_loc.end_column),
+                            ),
+                            severity: Constant::DiagnosticSeverity::ERROR
+                          )
+                        ]
+                      end
+
+        @message_queue.push(
+          method: "textDocument/publishDiagnostics",
+          params: RubyLsp::Interface::PublishDiagnosticsParams.new(
+            uri: uri,
+            diagnostics: diagnostics,
+            version: 1 # ?
+          )
+        )
       end
 
-      def hunt_for_deps_arg(node)
+      private
 
+      def hunt_for_deps_arg(node)
         node = node.first if node.is_a?(Array)
+
         if node.is_a?(Prism::CallNode) && node.name.to_s == "include"
-          a = node.arguments.arguments[0]
-          key = a
-          if a.receiver.name.to_s == "Deps"
-            key = a.arguments.arguments[0]
-          end
+          args = node.arguments.arguments[0]
+          key = args.receiver.name.to_s == "Deps" ? args.arguments.arguments[0] : args
+
           return key
         end
 
-        if node.respond_to?(:body) && !node.body.nil? && !node.is_a?(Prism::CallNode)
-          hunt_for_deps_arg(node.body)
-        end
+        hunt_for_deps_arg(node.body) if node.respond_to?(:body) && !node.body.nil? && !node.is_a?(Prism::CallNode)
       end
     end
   end
