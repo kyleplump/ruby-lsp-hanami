@@ -20,7 +20,7 @@ bundle add ruby-lsp-hanami --group development
 
 ### VS Code
 
-To enable auto-complete suggestions per keystroke in VS Code, update your `settings.json` with the following values:
+To enable auto-complete suggestions per keystroke in VS Code, as well as enabling Hanami specific diagnostics, update your `settings.json` with the following values:
 
 ```
 {
@@ -29,7 +29,8 @@ To enable auto-complete suggestions per keystroke in VS Code, update your `setti
     "comments": false,
     "strings": true
   },
-  "editor.suggestOnTriggerCharacters": true
+  "editor.suggestOnTriggerCharacters": true,
+  "rubyLsp.formatter": "hanami_diagnostics"
 }
 ```
 
@@ -41,7 +42,14 @@ Zed uses `solargraph` by default, update your settings to use `ruby-lsp`:
     "Ruby": {
       "language_servers": ["ruby-lsp"]
     }
-  }
+  },
+  "lsp": {
+    "ruby-lsp": {
+      "initialization_options": {
+        "formatter": "hanami_diagnostics"
+      }
+    }
+  },
   ```
 
 ## Features
