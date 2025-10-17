@@ -51,6 +51,7 @@ Zed uses `solargraph` by default, update your settings to use `ruby-lsp`:
     }
   },
   ```
+You can read more about configuring Ruby LSP support for Zed [here.](https://zed.dev/docs/languages/ruby#setting-up-ruby-lsp)
 
 ## Features
 
