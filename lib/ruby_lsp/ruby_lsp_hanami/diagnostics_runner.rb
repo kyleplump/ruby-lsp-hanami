@@ -26,17 +26,11 @@ module RubyLsp
 
         given_key = deps_argument.unescaped
 
-        # TODO: make this name less bad and also maybe dont do this
-        all_keys = RubyLsp::Hanami.container_keys.keys
-        has_given_key = false
-        all_keys.each do |key|
-          has_given_key = true if key.end_with?(given_key)
-        end
 
         # if there are no diagnostic errors, push an empty list to clear any previously
         # sent diagnostics for the file
         # @see https://dart.googlesource.com/sdk/%2B/fe6fc7803dd69c2ea4a1471d5898b4f4e13c0f99/pkg/analysis_server/tool/lsp_spec/lsp_specification.md#publishdiagnostics-notification-arrow_left
-        diagnostics = if has_given_key
+        diagnostics = if RubyLsp::Hanami.container_key?(key: given_key)
                         []
                       else
                         [

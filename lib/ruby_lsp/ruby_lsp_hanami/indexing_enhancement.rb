@@ -21,13 +21,7 @@ module RubyLsp
           # nesting, uri, location, name location , comments, parent class
           class_entry = RubyIndexer::Entry::Class.new([], file_path, node.location, node.name, node.comments, "")
 
-          # https://gist.github.com/komasaru/b3f22d5bcb8555deea1707b84d294045
-          snakified_name = result.join(".")
-                                 .gsub(/([A-Z]+)([A-Z][a-z])/, '\1_\2')
-                                 .gsub(/([a-z\d])([A-Z])/, '\1_\2')
-                                 .downcase
-
-          RubyLsp::Hanami.set_container_key(snakified_name, class_entry)
+          RubyLsp::Hanami.add_key_entry(result, class_entry)
         end
       end
 
@@ -44,13 +38,13 @@ module RubyLsp
         return if uri.to_s.include?(".rbenv")
 
         # edge case for Operations, using #call as potential entry
-        if owner.respond_to?(:parent_class) && owner.parent_class.include?("::Operation")
+        if owner.respond_to?(:parent_class) && owner.parent_class&.include?("::Operation")
           call_defs = index.method_completion_candidates("call", owner.name)
-          RubyLsp::Hanami.set_container_key(componentized_name, call_defs.first) unless call_defs.empty?
+          RubyLsp::Hanami.add_key_entry(componentized_name, call_defs.first) unless call_defs.empty?
         end
 
         # add all indexed entries as component keys
-        RubyLsp::Hanami.set_container_key(componentized_name, owner)
+        RubyLsp::Hanami.add_key_entry(componentized_name, owner)
       end
 
       private
