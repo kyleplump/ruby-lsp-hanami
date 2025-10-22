@@ -20,7 +20,7 @@ module RubyLsp
       def on_string_node_enter(node)
         # collect possible matches
         entries = if RubyLsp::Hanami::CONTAINERS.include?(@node_context.call_node.receiver.name.to_s.downcase)
-                    RubyLsp::Hanami.find_index_entries(key: node.content, index: @index)
+                    RubyLsp::Hanami.get_entries(key: node.content, lsp_index: @index)
                   else
                     []
                   end
