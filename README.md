@@ -7,6 +7,10 @@ A Ruby LSP addon for the [Hanami](https://hanamirb.org/) framework.
 
 ## Installation
 
+### Note
+:exclamation:  This project is still in active development, and as such, the gem does not yet exist.  If installing, please install from source :exclamation:
+
+
 Install the Gem:
 ```
 gem install ruby-lsp-hanami
@@ -20,7 +24,7 @@ bundle add ruby-lsp-hanami --group development
 
 ### VS Code
 
-To enable auto-complete suggestions per keystroke in VS Code, as well as enabling Hanami specific diagnostics, update your `settings.json` with the following values:
+To enable auto-complete suggestions per keystroke in VS Code, update your `settings.json` with the following values:
 
 ```
 {
@@ -29,8 +33,7 @@ To enable auto-complete suggestions per keystroke in VS Code, as well as enablin
     "comments": false,
     "strings": true
   },
-  "editor.suggestOnTriggerCharacters": true,
-  "rubyLsp.formatter": "hanami_diagnostics"
+  "editor.suggestOnTriggerCharacters": true
 }
 ```
 
@@ -42,16 +45,8 @@ Zed uses `solargraph` by default, update your settings to use `ruby-lsp`:
     "Ruby": {
       "language_servers": ["ruby-lsp"]
     }
-  },
-  "lsp": {
-    "ruby-lsp": {
-      "initialization_options": {
-        "formatter": "hanami_diagnostics"
-      }
-    }
-  },
+  }
   ```
-You can read more about configuring Ruby LSP support for Zed [here.](https://zed.dev/docs/languages/ruby#setting-up-ruby-lsp)
 
 ## Features
 
