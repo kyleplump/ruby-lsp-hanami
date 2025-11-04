@@ -3,12 +3,19 @@
 
 module RubyLsp
   module Hanami
-    # top level comment
-    #
+    # Adds support for 'click to definition'
     class Definition
       extend T::Sig
       include Requests::Support::Common
 
+      sig do
+        params(
+          response_builder: ResponseBuilders::CollectionResponseBuilder,
+          node_context: NodeContext,
+          index: RubyIndexer::Index,
+          dispatcher: Prism::Dispatcher
+        ).void
+      end
       def initialize(response_builder, node_context, index, dispatcher)
         @response_builder = response_builder
         @node_context = node_context
@@ -17,6 +24,7 @@ module RubyLsp
         dispatcher.register(self, :on_symbol_node_enter, :on_string_node_enter, :on_class_node_enter)
       end
 
+      sig { params(node: Prism::StringNode).void }
       def on_string_node_enter(node)
         # collect possible matches
         entries = if RubyLsp::Hanami::CONTAINERS.include?(@node_context.call_node.receiver.name.to_s.downcase)

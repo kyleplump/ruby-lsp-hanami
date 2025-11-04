@@ -1,12 +1,19 @@
+# frozen_string_literal: true
 # typed: true
 
 module RubyLsp
   module Hanami
+    include Kernel
+
+    # The IndexingEnhancement adds to and extends the default RubyIndexer provided by the Ruby LSP
+    # @see https://shopify.github.io/ruby-lsp/add-ons.html#dealing-with-declaration-dsls
     class IndexingEnhancement < RubyIndexer::Enhancement
       extend T::Sig
 
+
       # RubyIndexer::Enhancement doesn't provide on_class_node_enter by default.
       # hook into the existing indexer and manually create entries for class nodes
+      sig { params(listener: RubyIndexer::DeclarationListener).void }
       def initialize(listener)
         super(listener)
 
@@ -25,6 +32,7 @@ module RubyLsp
         end
       end
 
+      sig { params(_call_node: Prism::CallNode).void }
       def on_call_node_enter(_call_node)
         owner = @listener.current_owner
         return unless owner
@@ -49,7 +57,7 @@ module RubyLsp
 
       private
 
-      sig { params(uri: URI).returns(T::Boolean) }
+      sig { params(uri: URI::Generic).returns(T::Boolean) }
       def slice?(uri)
         uri.to_s.include?("slices/")
       end

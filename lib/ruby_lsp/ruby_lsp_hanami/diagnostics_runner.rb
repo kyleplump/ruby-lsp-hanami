@@ -1,22 +1,28 @@
 # typed: true
 # frozen_string_literal: true
-require 'prism'
+
+require "prism"
 
 module RubyLsp
   module Hanami
+    # A helper class that handles sending client side diagnostics
     class HanamiDiagnosticsRunner
+      extend T::Sig
       include RubyLsp::Requests::Support::Formatter
 
+      sig { params(message_queue: Thread::Queue, index: RubyIndexer::Index).void }
       def initialize(message_queue, index)
         @message_queue = message_queue
         @index = index
       end
 
+      sig { params(uri: URI::Generic, document: RubyLsp::Document).returns(String) }
       def run_formatting(uri, document)
         run_diagnostic(uri, document)
         document.source
       end
 
+      sig { params(uri: URI::Generic, document: RubyLsp::Document).void }
       def run_diagnostic(uri, document)
         ast = Prism.parse(document.source).value
         ast_root = ast.statements.body.first # this is an array, idk what the other elements would be in it though
@@ -57,6 +63,9 @@ module RubyLsp
 
       private
 
+      # intentionally casting as "T.anything" instead of writing a long list of whatever could be nested in a
+      # Prism AST, and potentially missing something causing a runtime halt
+      sig { params(node: T.anything).returns(T.nilable(Prism::StringNode)) }
       def hunt_for_deps_arg(node)
         node = node.first if node.is_a?(Array)
 
