@@ -34,12 +34,13 @@ module RubyLsp
       matched = if @key_forest.nil?
                   []
                 else
-                  [@key_forest.entry(key: key)] || []
+                  [@key_forest.entry(key: key)].compact
                 end
 
       unless lsp_index.nil?
-        matched += lsp_index.resolve(key.split(".").last,
-                                       key.split(".")[0, key.split(".").length - 1]) || []
+        key_parts = key.is_a?(Array) ? key : key.split(".")
+        matched += lsp_index.resolve(key_parts.last,
+                                       key_parts[0, key_parts.length - 1]) || []
       end
 
       matched.uniq!

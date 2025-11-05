@@ -32,6 +32,13 @@ module RubyLsp
 
         given_key = deps_argument.unescaped
 
+        # if we have a Deps argument, regardless of if that key exists or not,
+        # if Prism cannot return a location for the key, just skip on showing the
+        # diagnostic
+        return if deps_argument.opening_loc.nil? || deps_argument.closing_loc.nil?
+
+        starting_location = T.must(deps_argument.opening_loc)
+        ending_location = T.must(deps_argument.closing_loc)
 
         # if there are no diagnostic errors, push an empty list to clear any previously
         # sent diagnostics for the file
@@ -41,10 +48,12 @@ module RubyLsp
                       else
                         [
                           RubyLsp::Interface::Diagnostic.new(
-                            message: "Key: \"#{given_key}\" not found.",
+                            message: "Key: \"#{given_key}\" not found. \n Newline",
                             range: RubyLsp::Interface::Range.new(
-                              start: RubyLsp::Interface::Position.new(line: deps_argument.opening_loc.start_line - 1, character: deps_argument.opening_loc.start_column),
-                              end: RubyLsp::Interface::Position.new(line: deps_argument.closing_loc.end_line - 1, character: deps_argument.closing_loc.end_column),
+                              start: RubyLsp::Interface::Position.new(line: starting_location.start_line - 1,
+                                                                      character: starting_location.start_column),
+                              end: RubyLsp::Interface::Position.new(line: ending_location.end_line - 1,
+                                                                    character: ending_location.end_column)
                             ),
                             severity: Constant::DiagnosticSeverity::ERROR
                           )
@@ -63,17 +72,48 @@ module RubyLsp
 
       private
 
-      # intentionally casting as "T.anything" instead of writing a long list of whatever could be nested in a
+      # intentionally casting as "T.untyped" instead of writing a long list of whatever could be nested in a
       # Prism AST, and potentially missing something causing a runtime halt
-      sig { params(node: T.anything).returns(T.nilable(Prism::StringNode)) }
+      sig { params(node: T.untyped).returns(T.nilable(Prism::StringNode)) }
       def hunt_for_deps_arg(node)
         node = node.first if node.is_a?(Array)
 
-        if node.is_a?(Prism::CallNode) && node.name.to_s == "include"
-          args = node.arguments.arguments[0]
-          key = args.receiver.name.to_s == "Deps" ? args.arguments.arguments[0] : args
+        # sorbet ... :/
+        if node.is_a?(Prism::CallNode) && node.name.to_s == "include" && !node.arguments.nil?
+          # the arguments passed to the 'include' CallNode
+          call_node_args = T.cast(node.arguments, Prism::ArgumentsNode)
 
-          return key
+          # if 'include' was passed a CallNode ('Deps')
+          if !call_node_args.arguments.nil? && call_node_args.arguments.first.is_a?(Prism::CallNode)
+            # get a reference to the Deps CallNode
+            first_call_node_arg = T.cast(call_node_args.arguments.first, Prism::CallNode)
+
+            # TODO: this is the case when we encounter something like this:
+            # 'include Deps[]'
+            #
+            # should we be returning custom errors or something to show edge case diagnostics in the editor?
+            # e.g. "Deps must have an argument passed"
+            return nil if first_call_node_arg.arguments.nil?
+
+            # lol
+            first_call_node_arg_args = T.must(first_call_node_arg.arguments)
+
+            return nil unless first_call_node_arg.receiver.is_a?(Prism::ConstantReadNode)
+
+            # confirm that the reference we have is indeed 'Deps',
+            # and return the 'Deps' CallNode's arguments, else nil
+            deps_arguments =  if T.cast(first_call_node_arg.receiver, Prism::ConstantReadNode).name.to_s == "Deps"
+                                first_call_node_arg_args.arguments.first
+                              else
+                                nil
+                              end
+
+            return nil unless deps_arguments.is_a?(Prism::StringNode)
+
+            return deps_arguments
+          end
+
+          nil
         end
 
         hunt_for_deps_arg(node.body) if node.respond_to?(:body) && !node.body.nil? && !node.is_a?(Prism::CallNode)

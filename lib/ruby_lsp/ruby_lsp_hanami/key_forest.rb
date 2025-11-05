@@ -167,11 +167,6 @@ module RubyLsp
         node = @trees[tree_index]
 
         key_parts.each_with_index do |part, idx|
-          # if part == key_parts.last && node.name == part
-          #   result = node.entry
-          #   break
-          # end
-
           next if idx.zero? # root
 
           matched_child = node.children.index { |child| child.name == part }

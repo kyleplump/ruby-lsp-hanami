@@ -34,9 +34,17 @@ module RubyLsp
 
         receiver_name = @node_context.call_node.receiver.name.to_s
 
-        return unless node.arguments&.arguments&.any?
+        return if node.arguments.nil?
 
-        args = node.arguments.arguments.first.unescaped
+        call_node_args = T.cast(node.arguments, Prism::ArgumentsNode)
+
+        return if call_node_args.arguments.nil?
+
+        first_call_node_arg = T.must(call_node_args.arguments).first
+
+        return if first_call_node_arg.nil? || !first_call_node_arg.is_a?(Prism::StringNode)
+
+        args = first_call_node_arg.unescaped
 
         return unless RubyLsp::Hanami::CONTAINERS.include?(receiver_name.downcase)
 

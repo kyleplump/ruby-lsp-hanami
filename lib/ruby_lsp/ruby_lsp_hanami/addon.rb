@@ -12,6 +12,7 @@ require_relative "diagnostics_runner"
 
 module RubyLsp
   module Hanami
+    # Ruby LSP Add-on for supporting the Hanami Framework - https://hanamirb.org
     class Addon < ::RubyLsp::Addon
       extend T::Sig
 
@@ -26,16 +27,12 @@ module RubyLsp
       end
 
       # Performs any cleanup when shutting down the server, like terminating a subprocess
-      def deactivate
-      end
+      def deactivate; end
 
-      # Returns the name of the add-on
       def name
         "Ruby LSP Hanami"
       end
 
-      # Defining a version for the add-on is mandatory. This version doesn't necessarily need to match the version of
-      # the gem it belongs to
       def version
         "0.1.0"
       end
