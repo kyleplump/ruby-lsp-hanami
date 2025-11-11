@@ -102,6 +102,11 @@ module RubyLsp
         end
       end
 
+      def forest_fire
+        @trees = []
+        @tree_indices = {}
+      end
+
       private
 
       def insert(node:, key_parts:, entry:)

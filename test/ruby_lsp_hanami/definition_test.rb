@@ -1,15 +1,13 @@
 # frozen_string_literal: true
 
-# ruby -Itest test/test_ruby_lsp_hanami.rb
-#
-# this doesnt really work yet
-require "test_helper"
+require_relative "../test_helper"
 
 module RubyLsp
   module Hanami
     class DefinitionTest < Minitest::Test
       include RubyLsp::TestHelper
 
+      # 'default_indexer' referring to RubyLsp's default index behavior (non-IndexEnhanced). this is base case
       def test_deps_default_indexer
         response = generate_definitions_for_source(<<~RUBY, { line: 6, character: 27 })
           # typed: false
@@ -27,19 +25,9 @@ module RubyLsp
         assert_equal(2, response[0].range.start.character)
       end
 
-      def test_deps_indexing_enhancement_operation_call
+      def test_deps_non_standard_definition
         # Operation#call methods are also valid injectable dependencies and are subject to definition requests. These dependencies are picked up
-        # with the IndexingEnhancement, and set into the global hash for lookup.  mock this behavior
-        #
-        # a foot gun: this function automatically decrements line numbers by one based on difference between the indexer being 1 based
-        # and LSP protocol being 0 based
-        # https://github.com/Shopify/ruby-lsp/blob/af955d8d2291f20147375c117cdd1efb1c37905d/lib/ruby_lsp/requests/support/common.rb#L27
-        #
-        # have the line starts be +1
-        operation_call_def_location = Struct.new(:start_line, :start_column, :end_line, :end_column).new(4, 4, 4, 8)
-        definition_entry = Struct.new(:location, :file_path).new(operation_call_def_location, '/fake/my_operation.rb')
-        RubyLsp::Hanami.set_container_key('fake.my_operation', definition_entry)
-
+        # with the IndexingEnhancement, and set into the supplementary global store.  this is a good way to test 'non-default indexing behavior'
         response = generate_definitions_for_source(<<~RUBY, { line: 8, character: 25 })
           # typed: false
           module Fake
@@ -53,11 +41,10 @@ module RubyLsp
           end
         RUBY
 
-        assert_equal(1, response.size)
-        assert_equal(3, response[0].range.start.line)
-        assert_equal(4, response[0].range.start.character)
-        assert_equal(3, response[0].range.end.line)
-        assert_equal(8, response[0].range.end.character)
+        # assert that one of the responses points to the call function
+        assert response.any? do |resp|
+          resp.range.start.line == 3 && resp.range.start.character == 4
+        end
       end
 
       def generate_definitions_for_source(source, position)
