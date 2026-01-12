@@ -9,6 +9,7 @@ require_relative "definition"
 require_relative "completion"
 require_relative "indexing_enhancement"
 require_relative "diagnostics_runner"
+require_relative "code_lens"
 
 module RubyLsp
   module Hanami
@@ -43,6 +44,10 @@ module RubyLsp
 
       def create_completion_listener(response_builder, node_context, dispatcher, _uri)
         Completion.new(response_builder, node_context, dispatcher, @index, @workspace_path)
+      end
+
+      def create_code_lens_listener(response_builder, uri, dispatcher)
+        CodeLens.new(@global_state, response_builder, uri, dispatcher)
       end
     end
   end
