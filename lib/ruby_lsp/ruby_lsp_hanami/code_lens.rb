@@ -79,7 +79,7 @@ module RubyLsp
         # ["LearnHanakai", nil], ["Actions", nil], ["EmailSubscriptions", nil], ["Create", "LearnHanakai::Action"]] <-- example too
         # The controller name is the second last element in the stack
         puts "@constant_name_stack=#{@constant_name_stack.inspect}"
-
+        p "path: #{@path}"
         controller_name = @constant_name_stack[-2][0] # e.g. "EmailSubscriptions"
 
         # Handle the case where there is a capital letter in the controller name, e.g. "EmailSubscriptions" -> "email_subscriptions"
@@ -96,25 +96,7 @@ module RubyLsp
         #                   .downcase
 
 
-        root_path = if from_slice?
-          prefix, route = @path.split("slice")
-          prefix + "app/templates/#{controller_name}/#{action_name}"
-        else
-          prefix, route = @path.split("app")
-          prefix + "app/templates/#{controller_name}/#{action_name}"
-        end
-
-        p "found root path: #{root_path}"
-
-        # TODO: fix the root path
-        # view_uris = Dir.glob("/Users/afomera/Projects/hanami-projects/learn_hanakai/app/templates/#{controller_name}/#{action_name}*").filter_map do |path|
-        #   # it's possible we could have a directory with the same name as the action, so we need to skip those
-        #   next if File.directory?(path)
-
-        #   URI::Generic.from_path(path: path).to_s
-        # end
-
-        view_uris = Dir.glob("#{root_path}*").filter_map do |path|
+        view_uris = Dir.glob("#{associated_filepath("templates")}*").filter_map do |path|
           # it's possible we could have a directory with the same name as the action, so we need to skip those
           next if File.directory?(path)
 
@@ -153,14 +135,7 @@ module RubyLsp
 
         puts "Looking for view for action #{controller_name}##{action_name}"
 
-        # controller_name = class_name
-        #                   .delete_suffix("Action")
-        #                   .gsub(/([a-z])([A-Z])/, "\\1_\\2")
-        #                   .gsub("::", "/")
-        #                   .downcase
-
-        # TODO: fix the root path
-        view_uris = Dir.glob("/Users/afomera/Projects/hanami-projects/learn_hanakai/app/views/#{controller_name}/#{action_name}*").filter_map do |path|
+        view_uris = Dir.glob("#{associated_filepath("views")}*").filter_map do |path|
           # it's possible we could have a directory with the same name as the action, so we need to skip those
           next if File.directory?(path)
 
@@ -212,6 +187,14 @@ module RubyLsp
 
       def from_slice?
         @path.include?("slices/")
+      end
+
+      # TODO: better name
+      def associated_filepath(resource_type)
+        slice_or_app_delimiter = from_slice? ? "slices" : "app"
+        file_loc_prefix, path = @path.split(slice_or_app_delimiter)
+
+        file_loc_prefix + slice_or_app_delimiter + path.gsub("actions", resource_type).delete_suffix(File.extname(path))
       end
     end
   end
