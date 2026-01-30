@@ -10,6 +10,7 @@ require_relative "completion"
 require_relative "indexing_enhancement"
 require_relative "diagnostics_runner"
 require_relative "code_lens"
+require_relative "routes_walker"
 
 module RubyLsp
   module Hanami
@@ -23,6 +24,8 @@ module RubyLsp
         @workspace_path = @global_state.workspace_path
         @index = @global_state.index
         @message_queue = message_queue
+        @routes = RoutesWalker.new(project_root: @workspace_path).walk_routes_file
+
 
         global_state.register_formatter("hanami_diagnostics", HanamiDiagnosticsRunner.new(@message_queue, @global_state.index))
       end
@@ -47,7 +50,7 @@ module RubyLsp
       end
 
       def create_code_lens_listener(response_builder, uri, dispatcher)
-        CodeLens.new(@global_state, response_builder, uri, dispatcher)
+        CodeLens.new(@global_state, response_builder, uri, dispatcher, @routes)
       end
     end
   end

@@ -3,13 +3,15 @@ module RubyLsp
     class CodeLens
       include Requests::Support::Common
 
-      def initialize(global_state, response_builder, uri, dispatcher)
+      def initialize(global_state, response_builder, uri, dispatcher, routes)
         @global_state = global_state
         @response_builder = response_builder
         @path = uri.to_standardized_path
         @group_id = 1
         @group_id_stack = []
         @constant_name_stack = []
+        @module_nesting = nil
+        @routes = routes
 
         dispatcher.register(
           self,
@@ -25,9 +27,9 @@ module RubyLsp
       def on_def_node_enter(node)
         return unless action?
 
-        # add_route_code_lens_to_action(node)
-        add_jump_to_view_class_file(node)
-        add_jump_to_template_file(node)
+        add_route_code_lens_to_action(node)
+        # add_jump_to_view_class_file(node)
+        # add_jump_to_template_file(node)
       end
 
       def on_call_node_enter(node)
@@ -41,20 +43,25 @@ module RubyLsp
       end
 
       def add_route_code_lens_to_action(node)
-        class_name, = @constant_name_stack.last # : as !nil
+        class_name = @constant_name_stack.last # : as !nil
 
-        # TODO: Fetch real route and source location
-        route = { source_location: ["/Users/afomera/Projects/hanami-projects/learn_hanakai/config/routes.rb", 14],
-                  verb: "GET", path: "/about" }
-        file_path, line = route[:source_location]
+        p "module nesting: #{@module_nesting}"
+        p "routes!!!: #{@routes}"
 
-        @response_builder << create_code_lens(
-          node,
-          title: "#{route[:verb]} #{route[:path]}",
-          command_name: "rubyLsp.openFile",
-          arguments: [["file://#{file_path}#L#{line}"]],
-          data: { type: "file" }
-        )
+        # class_name, = @constant_name_stack.last # : as !nil
+
+        # # TODO: Fetch real route and source location
+        # route = { source_location: ["/Users/afomera/Projects/hanami-projects/learn_hanakai/config/routes.rb", 14],
+        #           verb: "GET", path: "/about" }
+        # file_path, line = route[:source_location]
+
+        # @response_builder << create_code_lens(
+        #   node,
+        #   title: "#{route[:verb]} #{route[:path]}",
+        #   command_name: "rubyLsp.openFile",
+        #   arguments: [["file://#{file_path}#L#{line}"]],
+        #   data: { type: "file" }
+        # )
       end
 
       # Given a Hanami action like:
@@ -169,6 +176,12 @@ module RubyLsp
 
       def on_module_node_enter(node)
         @constant_name_stack << [node.constant_path.slice, nil]
+
+        if @module_nesting.nil?
+          @module_nesting = node.constant_path.slice.downcase
+        else
+          @module_nesting += ".#{node.constant_path.slice.downcase}"
+        end
       end
 
       def on_module_node_leave(node)

@@ -18,6 +18,7 @@ module RubyLsp
         super(listener)
 
         file_path = @listener.instance_variable_get(:@uri)
+        index = @listener.instance_variable_get(:@index)
         return if file_path.to_s.include?(".rbenv")
 
         original_method = @listener.method(:on_class_node_enter)
@@ -26,7 +27,7 @@ module RubyLsp
           result = original_method.call(node)
           # class_entry = RubyIndexer::Entry.new(node.name, file_path, node.location, "")
           # nesting, uri, location, name location , comments, parent class
-          class_entry = RubyIndexer::Entry::Class.new([], file_path, node.location, node.name, node.comments, "")
+          class_entry = RubyIndexer::Entry::Class.new(index.configuration, [], file_path, node.location, node.name, node.comments, "")
 
           RubyLsp::Hanami.add_key_entry(result, class_entry)
         end
