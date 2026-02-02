@@ -50,7 +50,7 @@ module RubyLsp
       end
 
       def create_code_lens_listener(response_builder, uri, dispatcher)
-        CodeLens.new(@global_state, response_builder, uri, dispatcher, @routes)
+        CodeLens.new(@global_state, response_builder, uri, dispatcher, @routes, @workspace_path)
       end
     end
   end

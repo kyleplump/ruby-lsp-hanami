@@ -1,17 +1,19 @@
+# frozen_string_literal: true
+
 module RubyLsp
   module Hanami
     class CodeLens
       include Requests::Support::Common
 
-      def initialize(global_state, response_builder, uri, dispatcher, routes)
+      def initialize(global_state, response_builder, uri, dispatcher, routes, project_root)
         @global_state = global_state
         @response_builder = response_builder
         @path = uri.to_standardized_path
         @group_id = 1
         @group_id_stack = []
         @constant_name_stack = []
-        @module_nesting = nil
         @routes = routes
+        @project_root = project_root
 
         dispatcher.register(
           self,
@@ -28,8 +30,8 @@ module RubyLsp
         return unless action?
 
         add_route_code_lens_to_action(node)
-        # add_jump_to_view_class_file(node)
-        # add_jump_to_template_file(node)
+        add_jump_to_view_class_file(node)
+        add_jump_to_template_file(node)
       end
 
       def on_call_node_enter(node)
@@ -43,25 +45,34 @@ module RubyLsp
       end
 
       def add_route_code_lens_to_action(node)
-        class_name = @constant_name_stack.last # : as !nil
+        global_namespace = @constant_name_stack.first.first.downcase
+        containing_module = @constant_name_stack[-2].first.downcase
+        controller = @constant_name_stack.last
+        class_name = controller.first.downcase
 
-        p "module nesting: #{@module_nesting}"
-        p "routes!!!: #{@routes}"
+        # extreme rough first draft, obviously meant to be optimized needed
+        # something working
+        routes_with_class_as_key = @routes.filter do |route|
+          route[:key].include?(class_name)
+        end
 
-        # class_name, = @constant_name_stack.last # : as !nil
+        potential_key = "#{containing_module}.#{class_name}"
 
-        # # TODO: Fetch real route and source location
-        # route = { source_location: ["/Users/afomera/Projects/hanami-projects/learn_hanakai/config/routes.rb", 14],
-        #           verb: "GET", path: "/about" }
-        # file_path, line = route[:source_location]
+        match = routes_with_class_as_key.find do |route|
+          route[:containing_slice] == global_namespace && route[:key].include?(potential_key)
+        end
 
-        # @response_builder << create_code_lens(
-        #   node,
-        #   title: "#{route[:verb]} #{route[:path]}",
-        #   command_name: "rubyLsp.openFile",
-        #   arguments: [["file://#{file_path}#L#{line}"]],
-        #   data: { type: "file" }
-        # )
+        return unless match
+
+        file_path = File.join(@project_root, "config", "routes.rb")
+
+        @response_builder << create_code_lens(
+          node,
+          title: "#{match[:type].upcase} #{match[:route]}",
+          command_name: "rubyLsp.openFile",
+          arguments: [["file://#{file_path}#L#{match[:location].start_line}"]],
+          data: { type: "file" }
+        )
       end
 
       # Given a Hanami action like:
@@ -85,8 +96,6 @@ module RubyLsp
         # @constant_name_stack looks like this: [["LearnHanakai", nil], ["Actions", nil], ["About", nil], ["Index", "LearnHanakai::Action"]]
         # ["LearnHanakai", nil], ["Actions", nil], ["EmailSubscriptions", nil], ["Create", "LearnHanakai::Action"]] <-- example too
         # The controller name is the second last element in the stack
-        puts "@constant_name_stack=#{@constant_name_stack.inspect}"
-        p "path: #{@path}"
         controller_name = @constant_name_stack[-2][0] # e.g. "EmailSubscriptions"
 
         # Handle the case where there is a capital letter in the controller name, e.g. "EmailSubscriptions" -> "email_subscriptions"
@@ -131,17 +140,6 @@ module RubyLsp
       end
 
       def add_jump_to_view_class_file(node)
-        # @constant_name_stack looks like this: [["LearnHanakai", nil], ["Actions", nil], ["About", nil], ["Index", "LearnHanakai::Action"]]
-        # The controller name is the second last element in the stack
-        controller_name = @constant_name_stack[-2][0] # e.g. "EmailSubscriptions"
-
-        # Handle the case where there is a capital letter in the controller name, e.g. "EmailSubscriptions" -> "email_subscriptions"
-        controller_name = controller_name.gsub(/([a-z])([A-Z])/, "\\1_\\2").downcase
-
-        action_name = @constant_name_stack.last[0].downcase # e.g. "Index"
-
-        puts "Looking for view for action #{controller_name}##{action_name}"
-
         view_uris = Dir.glob("#{associated_filepath("views")}*").filter_map do |path|
           # it's possible we could have a directory with the same name as the action, so we need to skip those
           next if File.directory?(path)
@@ -176,12 +174,6 @@ module RubyLsp
 
       def on_module_node_enter(node)
         @constant_name_stack << [node.constant_path.slice, nil]
-
-        if @module_nesting.nil?
-          @module_nesting = node.constant_path.slice.downcase
-        else
-          @module_nesting += ".#{node.constant_path.slice.downcase}"
-        end
       end
 
       def on_module_node_leave(node)
@@ -195,7 +187,6 @@ module RubyLsp
         return false unless class_name && superclass_name
 
         superclass_name.end_with?("Action")
-        # @constant_name_stack.last&.end_with?("Controller")
       end
 
       def from_slice?
