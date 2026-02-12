@@ -48,8 +48,8 @@ module RubyLsp
 
         return unless RubyLsp::Hanami::CONTAINERS.include?(receiver_name.downcase)
 
-        parents = args.split('.')[0, args.split('.').length - 1]
-        needle = args.split('.').last
+        parents = args.split(".")[0, args.split(".").length - 1]
+        needle = args.split(".").last
         hits = @global_index.constant_completion_candidates(needle, parents)
 
         if hits&.any?
@@ -63,15 +63,12 @@ module RubyLsp
               detail: "Hanami dependency",
               documentation: "Dependency from Hanami container",
               label_details: Interface::CompletionItemLabelDetails.new(
-                description: hit.file_path,
+                description: hit.file_path
               ),
               kind: Constant::CompletionItemKind::CLASS
             )
           end
-        else
-          puts "No hits found for needle: '#{needle}' with parents: #{parents.inspect}"
         end
-
         completion_candidates = RubyLsp::Hanami.completion_options(key: args)
 
         return if completion_candidates.empty?

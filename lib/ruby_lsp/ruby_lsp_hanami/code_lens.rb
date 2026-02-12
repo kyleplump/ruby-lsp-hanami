@@ -95,23 +95,6 @@ module RubyLsp
       def add_jump_to_template_file(node)
         # @constant_name_stack looks like this: [["LearnHanakai", nil], ["Actions", nil], ["About", nil], ["Index", "LearnHanakai::Action"]]
         # ["LearnHanakai", nil], ["Actions", nil], ["EmailSubscriptions", nil], ["Create", "LearnHanakai::Action"]] <-- example too
-        # The controller name is the second last element in the stack
-        controller_name = @constant_name_stack[-2][0] # e.g. "EmailSubscriptions"
-
-        # Handle the case where there is a capital letter in the controller name, e.g. "EmailSubscriptions" -> "email_subscriptions"
-        controller_name = controller_name.gsub(/([a-z])([A-Z])/, "\\1_\\2").downcase
-
-        action_name = @constant_name_stack.last[0].downcase # e.g. "Index"
-
-        puts "Looking for template for action #{controller_name}##{action_name}"
-
-        # controller_name = class_name
-        #                   .delete_suffix("Action")
-        #                   .gsub(/([a-z])([A-Z])/, "\\1_\\2")
-        #                   .gsub("::", "/")
-        #                   .downcase
-
-
         view_uris = Dir.glob("#{associated_filepath("templates")}*").filter_map do |path|
           # it's possible we could have a directory with the same name as the action, so we need to skip those
           next if File.directory?(path)
@@ -176,7 +159,7 @@ module RubyLsp
         @constant_name_stack << [node.constant_path.slice, nil]
       end
 
-      def on_module_node_leave(node)
+      def on_module_node_leave(_node)
         @constant_name_stack.pop
       end
 

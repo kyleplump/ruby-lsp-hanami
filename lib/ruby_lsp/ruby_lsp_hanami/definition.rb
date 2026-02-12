@@ -13,13 +13,15 @@ module RubyLsp
           response_builder: ResponseBuilders::CollectionResponseBuilder,
           node_context: NodeContext,
           index: RubyIndexer::Index,
-          dispatcher: Prism::Dispatcher
+          dispatcher: Prism::Dispatcher,
+          workspace_path: String,
         ).void
       end
-      def initialize(response_builder, node_context, index, dispatcher)
+      def initialize(response_builder, node_context, index, dispatcher, workspace_path)
         @response_builder = response_builder
         @node_context = node_context
         @index = index
+        @workspace_path = workspace_path
 
         dispatcher.register(self, :on_symbol_node_enter, :on_string_node_enter, :on_class_node_enter)
       end
@@ -35,8 +37,7 @@ module RubyLsp
 
         entries.each do |entry|
           loc = entry.location
-          # dont want gems :(
-          next if entry.file_path.include?("ruby")
+          next unless entry.file_path.include?(@workspace_path)
 
           @response_builder << Interface::Location.new(
             uri: URI::Generic.from_path(

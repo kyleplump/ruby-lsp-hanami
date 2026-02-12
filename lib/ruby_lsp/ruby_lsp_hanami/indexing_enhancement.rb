@@ -16,10 +16,10 @@ module RubyLsp
       sig { params(listener: RubyIndexer::DeclarationListener).void }
       def initialize(listener)
         super(listener)
-
         file_path = @listener.instance_variable_get(:@uri)
         index = @listener.instance_variable_get(:@index)
-        return if file_path.to_s.include?(".rbenv")
+
+        return unless file_path.to_s.include?(index.configuration.instance_variable_get(:@workspace_path))
 
         original_method = @listener.method(:on_class_node_enter)
 
@@ -44,7 +44,7 @@ module RubyLsp
         component_parts.shift if slice?(uri)
         componentized_name = component_parts.join(".")
 
-        return if uri.to_s.include?(".rbenv")
+        return unless uri.to_s.include?(index.configuration.instance_variable_get(:@workspace_path))
 
         # edge case for Operations, using #call as potential entry
         if owner.respond_to?(:parent_class) && owner.parent_class&.include?("::Operation")

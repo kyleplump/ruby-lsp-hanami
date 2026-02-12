@@ -42,7 +42,7 @@ module RubyLsp
       end
 
       def create_definition_listener(response_builder, _uri, node_context, dispatcher)
-        Definition.new(response_builder, node_context, @index, dispatcher)
+        Definition.new(response_builder, node_context, @index, dispatcher, @workspace_path)
       end
 
       def create_completion_listener(response_builder, node_context, dispatcher, _uri)
