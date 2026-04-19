@@ -15,6 +15,8 @@ module RubyLsp
         @routes = routes
         @project_root = project_root
 
+        return if @routes.nil?
+
         dispatcher.register(
           self,
           :on_call_node_enter,

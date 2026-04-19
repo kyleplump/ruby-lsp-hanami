@@ -24,10 +24,9 @@ module RubyLsp
         @workspace_path = @global_state.workspace_path
         @index = @global_state.index
         @message_queue = message_queue
-        @routes = RoutesWalker.new(project_root: @workspace_path).walk_routes_file
+        @routes = parse_routes_file
 
-
-        global_state.register_formatter("hanami_diagnostics", HanamiDiagnosticsRunner.new(@message_queue, @global_state.index))
+        register_project_diagnostics
       end
 
       # Performs any cleanup when shutting down the server, like terminating a subprocess
@@ -51,6 +50,23 @@ module RubyLsp
 
       def create_code_lens_listener(response_builder, uri, dispatcher)
         CodeLens.new(@global_state, response_builder, uri, dispatcher, @routes, @workspace_path)
+      end
+
+      private
+
+      def parse_routes_file
+        walker = RoutesWalker.new(project_root: @workspace_path)
+        walker.walk_routes_file
+      rescue StandardError => e
+        nil
+      end
+
+      def register_project_diagnostics
+        # TODO: only register the formatter if "hanami_diagnostics" is defined in the editor settings
+        @global_state.register_formatter("hanami_diagnostics",
+                                         HanamiDiagnosticsRunner.new(@message_queue, @global_state.index))
+      rescue StandardError => e
+        nil
       end
     end
   end
