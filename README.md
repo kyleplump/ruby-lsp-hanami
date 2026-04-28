@@ -22,9 +22,12 @@ or
 bundle add ruby-lsp-hanami --group development
 ```
 
-### VS Code
+### :wrench: Optional Editor Configuration
+Currently, **VS Code** offers the most feature complete experience, and is the our primary development target.  There are plans to bring other editors to feature parity, and this README will be updated accordingly.
 
-To enable auto-complete suggestions per keystroke in VS Code, as well as enabling Hanami specific diagnostics, update your `settings.json` with the following values:
+#### :green_circle: VS Code
+
+To enable auto-complete suggestions per keystroke in VS Code, as well as enabling Hanami specific diagnostics (like 'Key Not Found' behavior), update your `settings.json` with the following values:
 
 ```
 {
@@ -39,7 +42,7 @@ To enable auto-complete suggestions per keystroke in VS Code, as well as enablin
 ```
 
 
-### Zed
+#### :yellow_circle: Zed
 Zed uses `solargraph` by default, update your settings to use `ruby-lsp`:
 ```
 "languages": {
@@ -60,14 +63,17 @@ You can read more about configuring Ruby LSP support for Zed [here.](https://zed
 
 ## Features
 
-TODO
-
-## Development
-
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+- 'Go-to-definition' support for `Deps` dependencies.
+- Autocompletion of `Deps` dependencies. 
+- 'Key not found' diagnostics for `Deps` dependencies.
+- 'CodeLens' capabilities ('Jump to [Template|View|Route]' from within your `Hanami::Action`). 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/ruby_lsp_hanami.
+1. Fork it (https://github.com/hanami/ruby-lsp-hanami/fork)
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create a new Pull Request
+
+In addition to contributing code, you can help to triage issues. This can include reproducing bug reports, or asking for vital information such as version numbers or reproduction instructions. If you would like to start triaging issues, one easy way to get started is to [subscribe to hanami on CodeTriage](https://www.codetriage.com/hanami/hanami).
