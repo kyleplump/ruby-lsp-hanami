@@ -25,9 +25,9 @@ bundle add ruby-lsp-hanami --group development
 ### :wrench: Optional Editor Configuration
 Currently, **VS Code** offers the most feature complete experience, and is the our primary development target.  There are plans to bring other editors to feature parity, and this README will be updated accordingly.
 
-#### VS Code :green_circle:
+#### :green_circle: VS Code
 
-To enable auto-complete suggestions per keystroke in VS Code, as well as enabling Hanami specific diagnostics, update your `settings.json` with the following values:
+To enable auto-complete suggestions per keystroke in VS Code, as well as enabling Hanami specific diagnostics (like 'Key Not Found' behavior), update your `settings.json` with the following values:
 
 ```
 {
@@ -42,7 +42,7 @@ To enable auto-complete suggestions per keystroke in VS Code, as well as enablin
 ```
 
 
-#### Zed :yellow_circle:
+#### :yellow_circle: Zed
 Zed uses `solargraph` by default, update your settings to use `ruby-lsp`:
 ```
 "languages": {
