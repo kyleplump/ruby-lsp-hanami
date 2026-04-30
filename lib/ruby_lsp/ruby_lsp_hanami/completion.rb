@@ -58,15 +58,7 @@ module RubyLsp
 
             hit = hit.first
 
-            @response_builder << Interface::CompletionItem.new(
-              label: hit.name,
-              detail: "Hanami dependency",
-              documentation: "Dependency from Hanami container",
-              label_details: Interface::CompletionItemLabelDetails.new(
-                description: hit.file_path
-              ),
-              kind: Constant::CompletionItemKind::CLASS
-            )
+            @response_builder << generate_completion_line_item(completion_candidate: hit.name)
           end
         end
         completion_candidates = RubyLsp::Hanami.completion_options(key: args)
@@ -74,16 +66,7 @@ module RubyLsp
         return if completion_candidates.empty?
 
         completion_candidates.each do |candidate|
-          @response_builder << Interface::CompletionItem.new(
-            label: candidate,
-            detail: "Hanami dependency",
-            documentation: "Dependency from Hanami container",
-            label_details: Interface::CompletionItemLabelDetails.new(
-              description: "hi"
-              # description: entry.name
-            ),
-            kind: Constant::CompletionItemKind::CLASS
-          )
+          @response_builder << generate_completion_line_item(completion_candidate: candidate)
         end
       end
 
@@ -91,6 +74,25 @@ module RubyLsp
 
       def hit_from_gem?(hit)
         hit.first&.uri.to_s.include?(".rbenv")
+      end
+
+      def generate_completion_line_item(completion_candidate:)
+        Interface::CompletionItem.new(
+          label: completion_candidate,
+          detail: "A Hanami component.",
+          documentation: Interface::MarkupContent.new(
+            kind: Constant::MarkupKind::MARKDOWN,
+            value: <<~MARKDOWN
+              ### #{completion_candidate}
+              A component within the **Hanami** dependency injection container.
+              [View Documentation](https://hanakai.org/learn/hanami/v2.3/app/container-and-components)
+            MARKDOWN
+          ),
+          label_details: Interface::CompletionItemLabelDetails.new(
+            description: "A Hanami component."
+          ),
+          kind: Constant::CompletionItemKind::CLASS
+        )
       end
     end
   end
