@@ -31,37 +31,36 @@ module RubyLsp
         assert response.empty?
       end
 
-      # def test_completion_candidates_found
-      #   source = <<~RUBY
-      #     module Fake
-      #       class MyClass
-      #         def my_method
-      #         end
-      #       end
-      #     end
-      #     # typed: false
-      #     class MyOtherClass
-      #       include Deps['fake.']
-      #     end
-      #   RUBY
+      def test_completion_candidates_found
+        source = <<~RUBY
+          module Fake
+            class MyClass
+              def my_method
+              end
+            end
+          end
+          # typed: false
+          class MyOtherClass
+            include Deps['fake.']
+          end
+        RUBY
 
+        response = generate_completions_for_source(source, { line: 8, character: 21 })
 
-
-      #   response = generate_completions_for_source(source, { line: 8, character: 23 })
-      #   p "response: #{response}"
-
-      #   assert response.any? { |item| item.is_a?(Interface::CompletionItem) }
-      # end
+        assert(response.any? { |item| item.is_a?(Interface::CompletionItem) })
+      end
 
       private
 
       def generate_completions_for_source(source, position)
-        with_server(source) do |server, uri|
+        # use a hard-coded fake URI within our current working directory, since the
+        # IndexingEnhancement will disregard files outside of the working directory.
+        with_server(source, URI("file://#{Dir.pwd}/fake.rb")) do |server, parsed_uri|
           server.process_message(
             id: 1,
             method: "textDocument/completion",
             params: {
-              textDocument: { uri: uri },
+              textDocument: { uri: parsed_uri },
               position: position
             }
           )

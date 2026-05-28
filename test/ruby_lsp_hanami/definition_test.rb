@@ -48,11 +48,11 @@ module RubyLsp
       end
 
       def generate_definitions_for_source(source, position)
-        with_server(source) do |server, uri|
+        with_server(source, URI("file://#{Dir.pwd}/fake.rb")) do |server, parsed_uri|
           server.process_message(
             id: 1,
             method: "textDocument/definition",
-            params: { textDocument: { uri: uri }, position: position }
+            params: { textDocument: { uri: parsed_uri }, position: position }
           )
 
           result = pop_result(server)
