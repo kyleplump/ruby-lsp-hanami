@@ -21,28 +21,28 @@ module RubyLsp
           end
         RUBY
 
-        with_server(source) do |_server, _uri|
-          assert_equal(true, RubyLsp::Hanami.container_key?(key: 'fake.my_class'))
+        with_server(source, URI("file://#{Dir.pwd}/fake.rb")) do |_server, _uri|
+          assert_equal(true, RubyLsp::Hanami.container_key?(key: "fake.my_class"))
         end
       end
 
       # sort of covered by DefinitionTest#test_deps_non_standard_definition,
       # this test is complimentary to that one
-      # def test_discovers_operation_call_functions
-      #   source = <<~RUBY
-      #     # typed: false
-      #     module Fake
-      #       class MyOperation < Hanami::Operation
-      #         def call; end
-      #       end
-      #     end
-      #   RUBY
+      def test_discovers_operation_call_functions
+        source = <<~RUBY
+          # typed: false
+          module Fake
+            class MyOperation < Hanami::Operation
+              def call; end
+            end
+          end
+        RUBY
 
-      #   with_server(source) do |_server, _uri|
-      #     assert_equal(true, RubyLsp::Hanami.container_key?(key: 'fake.my_operation'))
-      #     assert_equal(2, RubyLsp::Hanami.get_entries(key: 'fake.my_operation'))
-      #   end
-      # end
+        with_server(source, URI("file://#{Dir.pwd}/fake.rb")) do |_server, _uri|
+          assert_equal(true, RubyLsp::Hanami.container_key?(key: "fake.my_operation"))
+          assert_equal(1, RubyLsp::Hanami.get_entries(key: "fake.my_operation").size)
+        end
+      end
     end
   end
 end
